@@ -81,3 +81,11 @@ Ranking algorithms options:
 
 - A single word could appear in too many documents, and so maintaining a single key-value pair for that word is not fesible.
 - Most likely need to shard documents based on URL (domain), and then query all shards (fan-out) for each keyword in the search query.
+
+## HBase
+- query first schema design (instead of entity based as in the relational word)
+- read together ==> stored stogether
+- (denormalized data == duplicate data) to ==> replace join
+- parent-child relationship
+
+  ![HBase parent child relationship](../img/hbase-parent-nested-child-relationship-modeling.png)

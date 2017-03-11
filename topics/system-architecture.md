@@ -5,6 +5,12 @@
 * [What we talk about when we talk about distributed systems](http://videlalvaro.github.io/2015/12/learning-about-distributed-systems.html)
 * [A Comprehensive Guide to Building a Scalable Web App on Amazon Web Services](https://www.airpair.com/aws/posts/building-a-scalable-web-app-on-amazon-web-services-p1)
 * [Notes on Google's Site Reliability Engineering Book](http://danluu.com/google-sre-book/) or [the book itself](https://landing.google.com/sre/book.html)
+* [Distributed Systems Reading List](https://dancres.github.io/Pages/)
+* [Aws reinvent - scaling up to your 10M users](https://www.youtube.com/watch?v=vg5onp8TU6Q), [Slides](http://www.slideshare.net/AmazonWebServices/sov204-scaling-up-to-your-first-10-million-users-aws-reinvent-2014-41572495)
+* [Grocking the system design interview](https://www.educative.io/collection/5668639101419520/)
+* [Martin Fowler - NoSql Distilled](https://martinfowler.com/books/nosql.html)
+* [Designing Data-Intensive Applications by Martin Kleppmann](http://dataintensive.net/)
+
 
 ## HDD
 
@@ -48,6 +54,25 @@
 - RAID 5 – uses a simple XOR operation to calculate parity. Upon single drive failure, the information can be reconstructed from the remaining drives using the XOR operation on the known data. Any single drive of the drives we have can fail (total number of drives >= 2). In case of drive failure the rebuilding process is IO intensive.
 - RAID 6 – like RAID 5, but two disks can fail and no data loss.
 
+## Latency, throughput
+- Latency: propagation delay (msec)
+- Throughput: data transfered per unit of time (bps). Example
+- Bandwidth: maximum possible throughput
+- Example:
+
+| Type                    | Latency              | Throughput |
+|-------------------------|----------------------|------------|
+| shorter conveyor belt   | decrease             | no effect  |
+| faster conveyor belt    | decrease             | increase   |
+| fatter conveyor belt    | no effect            | increase   |
+| compression             | no effect            | increase   |
+
+- Little's law: occupancy = latency*troughput
+- Bandwidth Delay Product
+     - product of a data link's capacity (in bits per second) and its round-trip delay time
+     - maximum amount of data on the network circuit at any given time
+     - If the quantity of data sent is insufficient compared with the bandwidth-delay product, then the link is not being kept busy and the protocol is operating below peak efficiency
+
 ## CAP Theorem
 
 - Shared-data systems can have at most two of the three following properties: Consistency, Availability, and tolerance to network Partitions.
@@ -57,6 +82,7 @@
     - Standard database replication is not strongly consistent because special logic must be introduced to handle replication lag.
     - Consistency which is both instantaneous and global is impossible.
     - Mitigate by trying to push the time resolutions at which the consistency breaks down to a point where we no longer notice it.
+    - inconsistency in large-scale reliable distributed systems has to be tolerated to support highly concurrent read/write and live nodes during network partitions
 - Availability
     - Every request received by a *non-failing node* in the system must result in a response (that contains the results of the requested work).
     - Even when severe network failures occur, every request must terminate.
@@ -70,6 +96,31 @@
 - Most real-world systems require substantially less in the way of consistency guarantees than they do in the way of availability guarantees.
 - Failures of consistency are usually tolerated or even expected, but just about every failure of availability means lost money.
 - The choice of availability over consistency is a business choice, not a technical one.
+- a write-always system needs merge operation for partition consolidation, example: Amazon shopping cart
+- A(tomic)-C(onsistent)-I(solated)-D(urable) vs B(asically)-A(vailable)-S(oft state)-E(ventually consistent)
+
+### Client side consistency
+
+- strong consistency - clients are guaranteed to see the same order
+- weak consistency - inconsistency window - clients are guaranteed to see the same order after writes are outside of consistency window
+- eventual consistency - form of weak consistency, if no updates, guarantees inconsistencyWindow = f(communication delay, system load, #replicas)
+    - improved models: "monotonic reads" and "read your writes" are desirable for programmers for easier reasoning
+    - examples: DNS system, RDBMS asynchronous log shipping
+- sticky session - tradeoff between load balancing and monotonic/read your writes consistency
+### Server side consistency
+
+- `N: #(replicas)`, `W: #(write target)`, `R: #(read source)`
+- `(W+R > N)`: write set and read set overlap that guarantees strong consistency
+- `(W+R <= N)`: weak consistency, R=1 mostly
+
+| Example                                 |  Consistency |  N  |  W  |  R  |
+|:---------------------------------------:|:------------:|:---:|:---:|:---:|
+| synch RDBMS backup                      |    strong    |  2  |  2  |  1  |
+| asynch RDBMS backup + slave read        |     weak     |  2  |  1  |  1  |
+| fault tolerance                         |    strong    |  3  |  2  |  2  |
+| high read load, epidemic updates        |     weak     | 100 |  1  |  1  |
+
+
 
 ## MapReduce
 
@@ -125,12 +176,32 @@ public Tuple<String, List<String>> reduce(String key, List<String> value) {
 - Example implementations: Google's BigTable, Cassandra, Hazelcast, Aerospike, Riak.
 
 ### Data Partitioning (Sharding)
-
+- http://itknowledgeexchange.techtarget.com/enterprise-IT-tech-trends/database-sharding-horizontal-partitioning-for-massive-scalability/
 - Split data between multiple nodes.
 - Data should be well distributed throughout the set of nodes.
 - When a node is added or removed from set of nodes the expected fraction of objects that must be moved to a new node is the minimum needed to maintain a balanced load across the nodes.
 - System should be aware which node is responsible for a particular data.
 - Simple approach to partitioning of `hashCode(key) % n` breaks when we want to add/remove nodes.
+- difficulties
+    - joins are difficult across shards, denormalization is used which can lead to inconsistency problems
+    - application level referential integrity is needed (SQL jobs clean up dangling references)
+- strategies
+    - horizontal (or key based)
+        - split table horizontally
+        - example: zip code range, might get unbalanced
+    - vertical (row splitting): 
+        - split data vertically
+        - example: store profile data, photos, friends list separately
+        - further partitioning might be needed
+    - directory based partitioning, example:
+        - lookup service knowing the current partitioning scheme
+        - query1:  give me the db server for this record: `#recordId`
+        - answer1: `#dbId`
+        - pros: partitioning abstracted away from application
+        - cons: 
+            - performance overhead
+            - mapping service can become SPOF 
+    - composite paritioning: combination
 
 ### Consistent Hashing
 
@@ -147,6 +218,24 @@ public Tuple<String, List<String>> reduce(String key, List<String> value) {
 
 ([source](http://blog.imaginea.com/consistent-hashing-in-cassandra/))
 
+## Replication strategies
+
+### Synchronous vs asynchronous replication
+
+### State transfer vs Operation transfer
+
+- operation transfer
+    - the master propagate a sequence of operations to the slave
+    - less network load
+    - needs reliabile messaging with delivery order guarantee
+
+- state transfer
+    - the master passes its latest state to the slave
+    - robust against data loss
+    - Merkle tree - mechanism to send only deltas
+![Hash tree](../img/hash-tree.png)
+          
+
 ## Distributed System Consensus
 
 - A fundamental problem in distributed computing is to achieve overall system reliability in the presence of a number of faulty processes.
@@ -155,9 +244,43 @@ public Tuple<String, List<String>> reduce(String key, List<String> value) {
     - Paxos
     - [Raft](https://raft.github.io)
 
+## [System design patterns](http://horicky.blogspot.ch/2010/10/scalable-system-design-patterns.html)
+- Load Balancer
+
+  ![Load Balancer](../img/load-balancer.png)
+
+- Scatter Gather
+
+  ![Scatter Gather](../img/scatter-gather.png)
+
+- Result Cache
+
+  ![Result Cache](../img/result-cache.png)
+
+- Blackboard
+
+  ![Blackboard/Shared Space/Tupple Space](../img/blackboard-shared-space.png)
+
+- Pipe and Filter
+
+  ![Pipe and Filter/data flow](../img/pipe-and-filter.png)
+
+- Map-reduce
+
+  ![Mapreduce](../img/map-reduce.png)
+
+- Bulk Synchronous Parallel
+
+  ![Bulk Synchronous Parallel (pregel)](../img/bulk-synchronous-parallel.png)
+
+- Execution Orchestrator
+
+  ![Execution Orchestrator (dryad)](../img/execution-orchestrator.png)
+
 ## Resiliency Concepts (Advanced)
 
-- Controlled Delay
+- Controlled Delay (CoDel, http://queue.acm.org/detail.cfm?id=2839461)
+    - Active Queue Management (AQM) technique
     - Limit the size of a server's request queue without impacting reliability during normal operations.
     - Sets short timeouts, preventing long queues from building up.
     - If the queue has not been empty for the last `N` ms, then the amount of time spent in the queue is limited to `M` milliseconds. If the service has been able to empty the queue within the last `N` milliseconds, then the time spent in the queue is limited to `N` milliseconds.
@@ -205,6 +328,13 @@ public Tuple<String, List<String>> reduce(String key, List<String> value) {
 - Consistent hashing for sharding/partitioning
 - Compression
 - Possible to work harder on writes in order to make reads easier
+- Hinted handoff
+- Quorum
+- Lamport, vector clocks
+
+## System building patterns
+
+## NOSQL patterns
 
 ## Platform Needs
 
@@ -257,3 +387,12 @@ Summary mainly based on [this slide deck](https://speakerdeck.com/armon/swim-sca
 - Each ping/ack message sent between random nodes adds information about new and left/failed nodes.
 - Because pings are sent randomly, nodes will learn about new/failing nodes at different times => eventually (weakly) consistent.
 - Ping + piggybacking state updates = membership protocol.
+
+# System architecture design canvas
+- Step 1: Requirements clarifications: Always ask questions to find the exact scope of the problem you are solving.
+- Step 2: System interface definition: Define what APIs are expected from the system. This will also ensure if you haven’t gotten any requirement wrong.
+- Step 3: Back-of-the-envelope estimation: It’s always a good idea to estimate the scale of the system you are going to design.
+- Step 4: Define data model: Although it is not required early on, this will clarify how data will flow among different components of the system and later will also guide you towards data partitioning.
+- Step 5: High-level design: Draw a block diagram with 5-6 boxes representing core components of your system.
+- Step 6: Detailed design: Dig deeper into 2-3 components; interviewers feedback should always guide you towards which parts of the system he wants you to explain further.
+- Step 7: Bottlenecks: Try to discuss as many bottlenecks (and different approaches to mitigate them) as possible.

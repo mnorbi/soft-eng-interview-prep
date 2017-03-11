@@ -46,10 +46,14 @@ Layer           | Data unit          | Examples
 - Reliable and ordered, i.e., arrival and ordering are guaranteed.
 - Takes care of splitting your data info packets and sending those across the network, so you can write bytes as a stream of data.
 - Makes sure it doesn't send data too fast for the Internet connection to handle (flow control).
+- Congestion control - avoids collapsing the network throughput (slow start, AIMD)
 - Hides all complexities of packets and unreliability.
 - Sends an ack for every packet received.
 - Queues up data until there's enough to send as a packet.
 - TCP tends to induce packet loss for UDP packets whenever they share a bottleneck node (same LAN/WAN).
+- problems
+	- buffer bloat
+	- head of line blocking
 
 ## UDP
 
@@ -65,3 +69,6 @@ Layer           | Data unit          | Examples
 - You need to make sure you don't send data too fast for your Internet connection to handle.
 - Good for when you want data to get as quickly as possible from client to server without having to wait for lost data to be resent, usually real-time data.
 - Examples: real-time gaming, metrics reporting, video/audio streaming.
+
+## DNS
+- Classles Inter Domain Routing (CIDR)

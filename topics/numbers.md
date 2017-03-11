@@ -21,7 +21,7 @@ From | Time
 -----|--------
 RAM  | `20us`
 SSD  | `300us`
-HDD  | `2ms`
+HDD  | `20ms`
 
 ### CPU
 
@@ -38,6 +38,7 @@ Operation             | Time
 Send 2KB over network | `1us`
 Round-trip in DC      | `500us`
 Round-trip CA->AMS    | `150ms`
+
 
 ## Data Speeds
 
