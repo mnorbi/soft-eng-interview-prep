@@ -1,4 +1,4 @@
-# Designing data intensive applications
+# Martin Kleppmann - Designing data intensive applications
 
 ## Building blocks
 
