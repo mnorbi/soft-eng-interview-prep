@@ -11,6 +11,8 @@
 * [Martin Fowler - NoSql Distilled](https://martinfowler.com/books/nosql.html)
 * [Designing Data-Intensive Applications by Martin Kleppmann](http://dataintensive.net/)
 
+## Book summaries
+* [Designing data intensive applications](../book-summaries/designing-data-intensive-applications.md)
 
 ## HDD
 
@@ -120,7 +122,31 @@
 | fault tolerance                         |    strong    |  3  |  2  |  2  |
 | high read load, epidemic updates        |     weak     | 100 |  1  |  1  |
 
+#### Traditional 2PC
+- for strong consistency
+- hurts availability
+ - coordinator synchronously waiting for nodes
+ - more nodes ==> more likely write failure ==> not good for high write throughput
+- coordinator asks replicas for "ready to update" confirmation
+- replicas write update to a log
+- respond to coordinator
+- coordinator gathers responses synchronously
 
+#### Quorum based 2PC
+
+
+### Replication: State transfer vs Operation transfer
+
+- operation transfer
+    - the master propagate a sequence of operations to the slave
+    - less network load
+    - needs reliabile messaging with delivery order guarantee
+
+- state transfer
+    - the master passes its latest state to the slave
+    - robust against data loss
+    - Merkle tree - mechanism to send only deltas
+![Hash tree](../img/hash-tree.png)
 
 ## MapReduce
 
@@ -217,24 +243,6 @@ public Tuple<String, List<String>> reduce(String key, List<String> value) {
 ![Consistent Hashing](../img/consistent-hashing.png)
 
 ([source](http://blog.imaginea.com/consistent-hashing-in-cassandra/))
-
-## Replication strategies
-
-### Synchronous vs asynchronous replication
-
-### State transfer vs Operation transfer
-
-- operation transfer
-    - the master propagate a sequence of operations to the slave
-    - less network load
-    - needs reliabile messaging with delivery order guarantee
-
-- state transfer
-    - the master passes its latest state to the slave
-    - robust against data loss
-    - Merkle tree - mechanism to send only deltas
-![Hash tree](../img/hash-tree.png)
-          
 
 ## Distributed System Consensus
 
@@ -396,3 +404,4 @@ Summary mainly based on [this slide deck](https://speakerdeck.com/armon/swim-sca
 - Step 5: High-level design: Draw a block diagram with 5-6 boxes representing core components of your system.
 - Step 6: Detailed design: Dig deeper into 2-3 components; interviewers feedback should always guide you towards which parts of the system he wants you to explain further.
 - Step 7: Bottlenecks: Try to discuss as many bottlenecks (and different approaches to mitigate them) as possible.
+
