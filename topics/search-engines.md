@@ -161,6 +161,8 @@
 - LongAndShortClicks
 
 ##### Human rating
-
-## Ecosystem
-
+- user satisfaction ranking
+- comparative evaluation (vs previous)
+- golden set = manual query set + marked relevant answers
+- document partial ordering based on user input
+#### A/B testing
