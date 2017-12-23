@@ -48,9 +48,25 @@
 - include only most important document as search result to the index
 
 #### Document filtering
-- spam - http://airweb.cse.lehigh.edu/2005/gyongyi.pdf
+##### Spamming (spamdexing)
+- Taxonomy: http://airweb.cse.lehigh.edu/2005/gyongyi.pdf
+- artificially boost relevance and importance of web pages
+- *relevance score*: textual similarity between query and page 
+- *importance score*: query independent page popularity
+- *ranking score*: comibned relevance and importance score
+
+###### Boosting
+- techniques to game relevance (tfidf) and importance (page ranke) measuring algorithms
+[Boosting](../img/spamdexing-boosting-techniques.png)
+- term spamming: tailor html text field content
+- 
+
+###### Hiding
+- techniques to hide marks of boosting
+
+##### Others
 - undesirable document - similar to spam
-- duplicate - http://infolab.stanford.edu/~ullman/mmds/ch3.pdf
+- duplicate detection - http://infolab.stanford.edu/~ullman/mmds/ch3.pdf
   - locality sensitive hashing
   - similarity measures
   - clustering 
@@ -76,7 +92,7 @@
 - format
   - posting list compression
   - mmap()able data
-  - LSM-tree
+  - Log Structured Merge Tree (LSM-tree)
 
 ### Query analysis
 - non structured - NLP based extraction

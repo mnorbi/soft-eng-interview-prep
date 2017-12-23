@@ -45,6 +45,21 @@
 - Randomization is a powerful tool to improve algorithms with bad worst-case but good average-case complexity.
 - Quicksort can be applied to real world problems – like the *Nuts and Bolts* problem (first find a match between a random nut and bolt, then split the rest into two groups: bigger and smaller. Repeat in each group).
 - Experiments show that a well implemented quicksort in typically 2-3 times faster than mergesort or heapsort. The reason is the innermost loop operations are simpler. This could change on specific real world problems, because of system behavior and implementation. They have the same asymptotic behavior after all. Best way to know is to implement both and test.
+#### Expected running time analysis (percentile based)
+- N = array length
+- running time = treeDepth * jobPerDepth
+- jobPerDepth = N total, each mini array is partitioned in O(miniArraySize) time and their total length is N
+- treeDepth = can be calculated in expextation, outcome of a random process
+- the sorted distribution of items can be split into four equal parts: |..1st..|..2nd..|..3rd..|..4th..|
+- during sorting the pivot is chosen randomly from one of these sections
+- goodPivot = after partitioning, the pivot turns out to be in the 2nd or 3rd section of the final distribution, splitting the array worst case into 1/4N and 3/4N sections
+- badPivot = after partitinoning, the pivot turns out to be in the 1st or 4th section of the final distribution, leaving one of the sections too long, above 3/4N
+- probabilityGoodPivot = probability choosing from 2nd + probability choosing from 3rd section = 1/4+1/4 = 1/2
+- probabilityBadPivot = 1 - probabilityGoodPivot = 1/2
+- if we would always choose by chance a good pivot, then treeDepthAllGoodPivot(N) = 1 + treeDepthAllGoodPivot(3/4N) = 1 + ... + 1 = log(base=4/3,N) = log(N)/log(4/3N) = O(logN)
+- choosing bad pivot can be modeled as if the tree depth increased by one (we did O(N) partitioning operation unnecessarily), but the array length did not shrink at all
+- expectedTreeDepth(N) = 1 + probabilityBadPivot * expectedTreeDepth(N) + probabilityGoodPivot * expectedTreeDepth(3/4N) 
+- expectedTreeDepth(N) = 2 + expectedTreeDepth(3/4N) = 2 + ... + 2 = 2 * (1 + ... + 1) = 2 * log(base=4/3,N) = 2 * log(N)/log(4/3N) = O(logN)
 
 ### Heapsort
 
